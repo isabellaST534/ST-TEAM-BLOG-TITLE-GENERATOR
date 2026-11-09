@@ -1,24 +1,22 @@
-# Blog Topic Finder (Netlify)
+# Blog Topic Finder (Netlify, free AI models only)
 
-Takes a keyword, pulls real Google autocomplete queries, then asks an AI model for 10 topical-authority topics.
-Provider order: Gemini, then Groq, then OpenRouter. If one fails or times out, the next one runs.
+Takes a keyword, pulls real Google autocomplete queries, then asks a free AI model for 10 topical-authority topics.
+The page tries Gemini first, then Groq, then OpenRouter. Each provider is a separate request, so each gets its own Netlify time limit.
 
 ## Deploy
-1. Push this folder to GitHub and import it in Netlify (or run `npx netlify deploy --prod`).
-2. Site settings > Environment variables, add:
-   - `GEMINI_API_KEY`
-   - `GROQ_API_KEY`
-   - `OPENROUTER_API_KEY`
-3. Redeploy. Keys stay on the server and are never sent to the browser.
+1. Push this folder to GitHub and import it in Netlify (or run `npx netlify-cli deploy --prod`).
+2. Add environment variables (scopes: Functions, context: Production): `GEMINI_API_KEY`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`.
+3. Redeploy.
 
-## Optional settings (environment variables)
-- `GEMINI_MODEL` (default gemini-2.5-flash), `GROQ_MODEL` (default llama-3.3-70b-versatile)
-- `OPENROUTER_MODELS`: comma-separated list tried in order (defaults to two free models)
-- `AI_TIMEOUT_MS`: per-provider timeout, default 8000
+## Keeping it free
+- Gemini: uses only free-tier models (gemini-3.8-flash, 3.5-flash-lite, 3.1-flash-lite). Create the key in a Google AI Studio project WITHOUT billing enabled, otherwise usage may be charged. Google Search grounding is not used (it can be billed).
+- Groq: free plan, rate-limited. Default models: openai/gpt-oss-120b, openai/gpt-oss-20b. If both fail, it looks up what your account can use.
+- OpenRouter: the function lists models and keeps only those priced $0 for input and output, so it never picks a paid one. Free models are limited per day, and OpenRouter may require allowing free-model data use in your privacy settings.
 
-## Things to know
-- Free model names change often. If a provider keeps failing, the page shows the error. Update the model variable to a current free model.
-- Only Gemini can use live Google Search (grounding), so its ideas are checked against current top results. Groq and OpenRouter answer from model knowledge plus the autocomplete queries.
-- Demand and competition labels are AI estimates, not Ahrefs data.
-- Netlify's default function timeout is about 10 seconds. If Gemini is slow and falls back, the chain may exceed it. Check your plan's function timeout setting and raise it if you can.
-- Local test: `npm i -g netlify-cli`, put the keys in a `.env` file, run `netlify dev`.
+## Overrides (optional env vars)
+`GEMINI_MODELS`, `GROQ_MODEL`, `OPENROUTER_MODELS` (comma lists, tried in order), `AI_TIMEOUT_MS` (per model, default 6500).
+
+## Notes
+- Model availability changes often. The page shows each provider's exact error if all fail.
+- Demand and competition labels are AI estimates, not Ahrefs data. Ideas come from model knowledge plus the autocomplete queries; there is no live top-10 check.
+- Default Netlify function limit is about 10 seconds, so large "thinking" models may time out and the next provider takes over.
