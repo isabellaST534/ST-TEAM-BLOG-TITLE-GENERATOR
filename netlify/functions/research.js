@@ -100,9 +100,18 @@ const providers = {
     if (!models.length) throw new Error("no free models found");
     return tryModels(models, async (m) => (await call("POST", "https://openrouter.ai/api/v1/chat/completions", H,
       { model: m, messages: [{ role: "user", content: p }] })).choices?.[0]?.message?.content, "OpenRouter");
+  },
+
+  // Free models only: ids must end in ":free" (or be th-rudder), so a paid model can never be picked.
+  tokenharbor: async (p) => {
+    const models = list("TOKENHARBOR_MODELS", "deepseek-v4.1-flash:free,mimo-v2.6-flash:free,th-rudder").filter(m => /:free$|^th-rudder$/.test(m));
+    if (!models.length) throw new Error("only :free models are allowed");
+    return tryModels(models, async (m) => (await call("POST", "https://tokenharbor.ai/v1/chat/completions",
+      { Authorization: "Bearer " + process.env.TOKENHARBOR_API_KEY },
+      { model: m, messages: [{ role: "user", content: p }] })).choices?.[0]?.message?.content, "Token Harbor");
   }
 };
-const KEYS = { gemini: "GEMINI_API_KEY", groq: "GROQ_API_KEY", openrouter: "OPENROUTER_API_KEY" };
+const KEYS = { gemini: "GEMINI_API_KEY", groq: "GROQ_API_KEY", openrouter: "OPENROUTER_API_KEY", tokenharbor: "TOKENHARBOR_API_KEY" };
 
 exports.handler = async (event) => {
   DEADLINE = Date.now() + 9300;

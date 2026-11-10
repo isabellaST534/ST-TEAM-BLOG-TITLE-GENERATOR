@@ -38,7 +38,7 @@ async function run(){
  $("go").disabled=true;$("st").className="msg";$("st").textContent="Researching, this can take up to a minute…";$("out").innerHTML="";
  try{
   const failed=[];let d=null;
-  for(const p of ["gemini","groq","openrouter"]){
+  for(const p of ["tokenharbor","gemini","groq","openrouter"]){
    $("st").textContent="Trying "+p+"…";
    try{
     const r=await fetch("/.netlify/functions/research",{method:"POST",body:JSON.stringify({keyword:kw,audience:$("aud").value,used:$("used").value,provider:p})});

@@ -1,11 +1,11 @@
 # Blog Topic Finder (Netlify, free AI models only)
 
 Takes a keyword, pulls real Google autocomplete queries, then asks a free AI model for 10 topical-authority topics.
-The page tries Gemini first, then Groq, then OpenRouter. Each provider is a separate request, so each gets its own Netlify time limit.
+The page tries Token Harbor first, then Gemini, then Groq, then OpenRouter. Each provider is a separate request, so each gets its own Netlify time limit.
 
 ## Deploy
 1. Push this folder to GitHub and import it in Netlify (or run `npx netlify-cli deploy --prod`).
-2. Add environment variables (scopes: Functions, context: Production): `GEMINI_API_KEY`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`.
+2. Add environment variables (scopes: Functions, context: Production): `GEMINI_API_KEY`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `TOKENHARBOR_API_KEY`.
 3. Redeploy.
 
 ## Keeping it free
@@ -20,3 +20,9 @@ The page tries Gemini first, then Groq, then OpenRouter. Each provider is a sepa
 - Model availability changes often. The page shows each provider's exact error if all fail.
 - Demand and competition labels are AI estimates, not Ahrefs data. Ideas come from model knowledge plus the autocomplete queries; there is no live top-10 check.
 - Default Netlify function limit is about 10 seconds, so large "thinking" models may time out and the next provider takes over.
+
+## Token Harbor
+- Endpoint: https://tokenharbor.ai/v1 (OpenAI-compatible). Default models: deepseek-v4.1-flash:free, mimo-v2.6-flash:free, th-rudder.
+- In the Token Harbor dashboard, enable the free models first. Free models may retain prompts and responses for diagnostics and model improvement.
+- Paid models are blocked in code: only ids ending in ":free" (or th-rudder) are allowed, including in `TOKENHARBOR_MODELS`.
+- Order is set by the provider list in `index.html` (currently Token Harbor first).
